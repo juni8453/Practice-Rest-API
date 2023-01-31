@@ -41,15 +41,12 @@ public class Event {
   @Enumerated(EnumType.STRING)
   private EventStatus eventStatus = EventStatus.DRAFT;
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
+  public void update() {
+    if (location == null || location.isBlank()) {
+      offline = false;
+
+    } else {
+      offline = true;
     }
-    if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) {
-      return false;
-    }
-    Event event = (Event) o;
-    return id != null && Objects.equals(id, event.id);
   }
 }

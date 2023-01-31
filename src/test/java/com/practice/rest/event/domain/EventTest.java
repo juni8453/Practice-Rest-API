@@ -2,8 +2,12 @@ package com.practice.rest.event.domain;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.stream.Stream;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 class EventTest {
 
@@ -27,5 +31,24 @@ class EventTest {
 
     assertThat(event.getName()).isEqualTo(name);
     assertThat(event.getDescription()).isEqualTo(description);
+  }
+
+  @ParameterizedTest
+  @MethodSource("paramsForTestOffline")
+  void testOffline(String location, boolean isOffline) {
+    Event event = Event.builder()
+        .location(location)
+        .build();
+
+    event.update();
+    assertThat(event.isOffline()).isEqualTo(isOffline);
+  }
+
+  private static Stream<Arguments> paramsForTestOffline() {
+    return Stream.of(
+        Arguments.of("강남", true),
+        Arguments.of(null, false),
+        Arguments.of("", false)
+    );
   }
 }
