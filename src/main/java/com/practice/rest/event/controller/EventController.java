@@ -3,6 +3,7 @@ package com.practice.rest.event.controller;
 import static org.springframework.hateoas.MediaTypes.HAL_JSON_VALUE;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
+import com.practice.rest.event.EventResource;
 import com.practice.rest.event.EventValidator;
 import com.practice.rest.event.domain.Event;
 import com.practice.rest.event.domain.EventDto;
@@ -40,9 +41,22 @@ public class EventController {
 
     Event event = modelMapper.map(eventDto, Event.class);
     Event newEvent = eventRepository.save(event);
+
     URI createdUri = linkTo(EventController.class).slash(newEvent.getId()).toUri();
 
-    return ResponseEntity.created(createdUri).body(event);
+    /**
+     * EventResource 를 빼서 여러 링크를 추가할 수 있다.
+     */
+    EventResource eventResource = new EventResource(newEvent);
+    eventResource.add(linkTo(EventController.class)
+        .withRel("query-events")); // = /api/events
+    eventResource.add(linkTo(EventController.class)
+        .slash(newEvent.getId()).withRel("update-event")); // = /api/events/{id}
+    eventResource.add(linkTo(EventController.class)
+        .slash(newEvent.getId()).withSelfRel()); // = /api/events/{id}
+
+    // Hateoas 를 위해 EventResource 에 담아서 반환해줘야한다.
+    return ResponseEntity.created(createdUri).body(eventResource);
   }
 
 }

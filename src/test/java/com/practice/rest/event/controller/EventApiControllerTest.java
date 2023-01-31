@@ -11,7 +11,6 @@ import com.practice.rest.event.domain.Event;
 import com.practice.rest.event.domain.EventDto;
 import com.practice.rest.event.domain.EventStatus;
 import java.time.LocalDateTime;
-import org.hamcrest.Matchers;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,9 +57,8 @@ public class EventApiControllerTest {
         .andExpect(header().exists(HttpHeaders.LOCATION))
         .andExpect(header().string(HttpHeaders.CONTENT_TYPE, MediaTypes.HAL_JSON_VALUE))
         .andExpect(jsonPath("free").value(false))
-        .andExpect(jsonPath("offline").value(true))
+        .andExpect(jsonPath("offline").value(false))
         .andExpect(jsonPath("eventStatus").value(EventStatus.DRAFT.name()));
-
   }
 
   // yml or properties 에서 받을 수 없는 프로퍼티를 받는 경우 Bad Request 가 동작하도록 간단하게 설정할 수 있다.
@@ -124,5 +122,35 @@ public class EventApiControllerTest {
             .content(mapper.writeValueAsString(eventDto)))
         .andDo(print())
         .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  @DisplayName("정상적으로 이벤트를 생성하고 Hateoas 링크 정보를 확인할 수 있다")
+  void createEvent_With_Hateoas() throws Exception {
+    EventDto eventDto = EventDto.builder()
+        .name("Spring")
+        .description("REST API Development with Spring")
+        .beginEnrollmentDateTime(LocalDateTime.of(2023, 1, 30, 0, 0))
+        .closeEnrollmentDateTime(LocalDateTime.of(2023, 1, 31, 0, 0))
+        .beginEventDateTime(LocalDateTime.of(2023, 2, 1, 0, 0))
+        .endEventDateTime(LocalDateTime.of(2023, 2, 2, 0, 0))
+        .limitOfEnrollment(100)
+        .location("강남역 4번 출구")
+        .build();
+
+    mockMvc.perform(post("/api/events/")
+            .contentType(MediaType.APPLICATION_JSON) // JSON 타입 요청을 보낸다.
+            .accept(MediaTypes.HAL_JSON_VALUE) // HAL JSON 타입 응답을 원한다.
+            .content(mapper.writeValueAsString(eventDto)))
+        .andDo(print())
+        .andExpect(status().isCreated())
+        .andExpect(header().exists(HttpHeaders.LOCATION))
+        .andExpect(header().string(HttpHeaders.CONTENT_TYPE, MediaTypes.HAL_JSON_VALUE))
+        .andExpect(jsonPath("free").value(false))
+        .andExpect(jsonPath("offline").value(false))
+        .andExpect(jsonPath("eventStatus").value(EventStatus.DRAFT.name()))
+        .andExpect(jsonPath("_links.query-events").exists())
+        .andExpect(jsonPath("_links.update-event").exists())
+        .andExpect(jsonPath("_links.self").exists());
   }
 }
