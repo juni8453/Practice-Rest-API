@@ -100,12 +100,13 @@ public class EventApiControllerTest {
     mockMvc.perform(post("/api/events")
             .contentType(MediaType.APPLICATION_JSON)
             .content(mapper.writeValueAsString(eventDto)))
+        .andDo(print())
         .andExpect(status().isBadRequest());
   }
 
   // 이벤트 시작 시간이 끝나는 시간보다 느린 이상한 값이 들어온 경우 Bad Request 발생
   @Test
-  @DisplayName("입력 값이 잘못된 경 경우 404 예외가 발생하는 테스트")
+  @DisplayName("입력 값이 잘못된 경우 404 예외가 발생하는 테스트")
   public void createEvent_Bad_Request_Wrong_Input() throws Exception {
     EventDto eventDto = EventDto.builder()
         .name("Spring")
@@ -121,6 +122,7 @@ public class EventApiControllerTest {
     mockMvc.perform(post("/api/events")
             .contentType(MediaType.APPLICATION_JSON)
             .content(mapper.writeValueAsString(eventDto)))
+        .andDo(print())
         .andExpect(status().isBadRequest());
   }
 }

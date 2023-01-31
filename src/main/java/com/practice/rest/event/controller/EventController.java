@@ -29,8 +29,12 @@ public class EventController {
 
   @PostMapping
   public ResponseEntity createEvent(@RequestBody @Valid EventDto eventDto, Errors errors) {
+    if (errors.hasErrors()) { // 바인딩 시 에러 발생 -> Bad Request
+      return ResponseEntity.badRequest().build();
+    }
+
     eventValidator.validate(eventDto, errors);
-    if (errors.hasErrors()) {
+    if (errors.hasErrors()) { // Valid 로 잡아내기 어려운 로직에서 잘못된 입력 에러 발생 -> Bad Request
       return ResponseEntity.badRequest().build();
     }
 
